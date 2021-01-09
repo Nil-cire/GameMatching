@@ -1,0 +1,205 @@
+{% extends 'PostAndSearch/Base.html' %}
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    {% block head %}
+    <title> Game Matching </title>
+    {% endblock %}
+</head>
+<body>
+    {% block body %}
+    <!-- header -->
+    <header>
+        <h1> Game Matching : {{ game.english_name }} </h1>
+        <hr>
+    </header>
+
+    <!-- main -->
+    <main>
+        <div><h2> {{ game.name }} </h2></div>
+        <!-- Index zone -->
+
+    <!-- Create room-->
+        <div class="container"><h2> Create a room </h2></div>
+        <div class="container">
+            <form method="post" style="" name="search">
+                {% csrf_token %}
+                {{ create_form.as_p }}
+                <input type="submit" value="Create">
+            </form>
+            <!-- old creating form
+            <div>
+                <span> Target </span>
+                <select>
+                    <option> ({ game.target }} </option>
+                </select>
+            </div>
+            <div>
+                <span> Player # </span>
+                <select>
+                    <option> 1 </option>
+                    <option> 2 </option>
+                    <option> 3 </option>
+                    <option> 4 </option>
+                </select>
+            </div>
+            <div>
+                <span> Default Language </span>
+                <select>
+                    <option> ({ languages }} </option>
+                </select>
+            </div>
+            <span>Password:</span><input type="text" placeholder="Password" >
+            <div>
+                <button> Create room </button>
+            </div>
+            -->
+        </div>
+        <br>
+    <!-- Search -->
+        <div class="container"> <h2> Search a room </h2> </div>
+        <div class="container">
+            <form method="get" name="search">
+                {{ search_form.as_p }}
+                <input type="submit" name="search" value="Search">
+            </form>
+        </div>
+        <div>
+            <!-- old search form
+            <div>
+                <span> Target </span>
+                <select>
+                    <option> ({ game.target }} </option>
+                </select>
+            </div>
+            <div>
+                <span> Player # </span>
+                <select>
+                    <option> 1 </option>
+                    <option> 2 </option>
+                    <option> 3 </option>
+                    <option> 4 </option>
+                </select>
+            </div>
+            <div>
+                <span> Default Language </span>
+                <select>
+                    <option> ({ languages }} </option>
+                </select>
+            </div>
+            <button> Search room </button>
+            -->
+        </div>
+
+
+    <!-- Rooms -->
+        <div class="container">
+            <h2> Rooms </h2>
+            <div> Total rooms : {{ exist_rooms.count }} rooms </div>
+            <button> Refresh </button>
+            <div style="display: grid; grid-template-columns: 1fr 1fr">
+            {% for room in exist_rooms %}
+                <div style="border: solid; width:20rem" >
+                    <span> {{ room.host }} 's Room</span>
+                    <form method="post" action="http://127.0.0.1:8000/homepage/game/{{ english_name }}/{{ room.room_id }}/  " name="join room">
+                        {% csrf_token %}
+                        <input type="submit" value="Join Room">
+                    </form>
+                    <ul>
+                        <li> Room id : {{ room.room_id }} </li>
+                        <li> Version : {{ room.version }} </li>
+                        <li> Target : {{ room.target }} </li>
+                        <li> Password : {{ room.password }} </li>
+                        <li> Player #: {{ room.player }} </li>
+                        <li> Language : {{ room.language }} </li>
+                        <li> Require : {{ room.require }} </li>
+                    </ul>
+                </div>
+            {% endfor %}
+            </div>
+        </div>
+
+    <!-- Game News -->
+        <div class="container">
+            <h2> Game News </h2>
+            <div>
+                <table>
+                    <tr>
+                        <th> ((item)) </th>
+                        <th> ((topic)) </th>
+                        <th colspan="4"> ((title)) </th>
+                        <th> ((author)) </th>
+                        <th> ((date)) </th>
+                        <th> ((likes)) </th>
+                    </tr>
+                    <tr>
+                        <td> ({ article.item }} </td>
+                        <td> ({ article.topic }} </td>
+                        <td colspan="4"> ({ article.title }} </td>
+                        <td> ({ article.author }} </td>
+                        <td> ({ article.date }} </td>
+                        <td> ({ article.likes }} </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+    <!-- Chat Room -->
+        <aside>
+            <div class="container">
+                <h2> Chat room </h2>
+                <div>
+                    <textarea id="chat-log" cols="100" rows="20"></textarea><br/>
+                    <input id="chat-message-input" type="text" size="100"/><br/>
+                    <input id="chat-message-submit" type="button" value="Send"/>
+                </div>
+            </div>
+
+        </aside>
+    </main>
+    <!-- footer -->
+    <footer>
+
+    </footer>
+</body>
+{% endblock %}
+{% block script %}
+<script>
+    var roomName = "{{ english_name|escapejs }}";
+
+    var chatSocket = new WebSocket(
+        'ws://' + window.location.host +
+        '/ws/homepage/game/' + roomName + '/');
+
+    chatSocket.onmessage = function(e) {
+        var data = JSON.parse(e.data);
+        var message = data['message'];
+        document.querySelector('#chat-log').value += (message + '\n');
+    };
+
+    chatSocket.onclose = function(e) {
+        console.error('Chat socket closed unexpectedly');
+    };
+
+    document.querySelector('#chat-message-input').focus();
+    document.querySelector('#chat-message-input').onkeyup = function(e) {
+        if (e.keyCode === 13) {  // enter, return
+            document.querySelector('#chat-message-submit').click();
+        }
+    };
+
+    document.querySelector('#chat-message-submit').onclick = function(e) {
+        var messageInputDom = document.querySelector('#chat-message-input');
+        var message = messageInputDom.value;
+        chatSocket.send(JSON.stringify({
+            'message': message
+        }));
+
+        messageInputDom.value = '';
+    };
+</script>
+{% endblock %}
+</html>

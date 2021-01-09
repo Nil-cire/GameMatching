@@ -1,0 +1,90 @@
+{% extends 'PostAndSearch/Base.html' %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    {% block head %}
+    <title> Home Page </title>
+    {% endblock %}
+    <link>
+    <style></style>
+</head>
+<body>
+    {% block body %}
+    <!-- Header -->
+    <header>
+        <h1> Game Matching </h1>
+        <hr>
+    </header>
+
+    <!-- Main -->
+    <main>
+        <!-- New games-->
+        <h2> New games info. </h2>
+        <div>
+            <nav>
+                <ul>
+                    <li><a href="" style="text-decoration: none"> PC games </a></li>
+                    <li><a href="" style="text-decoration: none"> Mobile </a></li>
+                    <li><a href="" style="text-decoration: none"> Video game </a></li>
+                </ul>
+            </nav>
+        </div>
+        <table>
+            <tr>
+                <th> (item) </th>
+                <th> (( game.name ))</th>
+                <th> (( game.release_time )) </th>
+                <th> (( game. type ))</th>
+                <th> (( game.company ))</th>
+                <th> (( game.demo)) </th>
+            </tr>
+            {% for game_new in all_game_new %}
+            <tr>
+                <td> {{ forloop.counter }} </td>
+                <td> {{ game_new }}</td>
+                <td> {{ game_new.release_date }} </td>
+                <td> {{ game_new.get_type }} </td>
+                <td> {{ game_new.get_company }}</td>
+                <td> {{ game_new.demo}} </td>
+            </tr>
+            {% endfor %}
+        </table>
+
+        <!-- Searching zone-->
+        <h2> Game on! </h2>
+        <div>
+            <!-- Searching -->
+            <div>
+                <div> Search for a game </div>
+                <form method="post">
+                {% csrf_token %}
+                <! --{{ search_form }}-->
+                    <select name="selected_game">
+                        {% for game in games %}
+                        <option>{{ game.english_name }}</option>
+                        {% endfor %}
+                    </select>
+                <input type="submit" value="Search">
+                </form>
+            </div>
+        </div>
+
+        <!-- streaming -->
+        <aside>
+            <div> <h2> Streaming window </h2> </div>
+        </aside>
+
+
+    </main>
+    <!-- Footer -->
+    <footer>
+
+    </footer>
+    {% endblock %}
+
+</body>
+    {% block script %}
+    {% endblock %}
+</html>
